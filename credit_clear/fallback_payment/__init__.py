@@ -1,0 +1,1 @@
+"""Fallback payment app."""
