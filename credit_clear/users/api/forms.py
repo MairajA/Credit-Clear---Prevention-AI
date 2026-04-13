@@ -10,10 +10,12 @@ User = get_user_model()
 
 
 class RegisterForm(forms.Form):
+    """Signup — full name, email, password, confirm password, terms checkbox."""
+
+    name = forms.CharField(max_length=255)
     email = forms.EmailField()
     password = forms.CharField()
-    name = forms.CharField(required=False, max_length=255)
-    role = forms.ChoiceField(choices=User.Role.choices, required=False)
+    confirm_password = forms.CharField()
     terms_accepted = forms.BooleanField(required=True)
     privacy_accepted = forms.BooleanField(required=True)
     marketing_consent = forms.BooleanField(required=False)
@@ -30,8 +32,18 @@ class RegisterForm(forms.Form):
         validate_password(password)
         return password
 
+    def clean(self) -> dict:
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+        if password and confirm_password and password != confirm_password:
+            self.add_error("confirm_password", _("Passwords do not match."))
+        return cleaned_data
+
 
 class LoginForm(forms.Form):
+    """Login — email + password."""
+
     email = forms.EmailField()
     password = forms.CharField()
 
@@ -52,6 +64,45 @@ class LoginForm(forms.Form):
         return cleaned_data
 
 
+class PhoneNumberForm(forms.Form):
+    """Phone number input — country code + phone number."""
+
+    phone_country_code = forms.CharField(max_length=5, required=True)
+    phone_number = forms.CharField(max_length=20, required=True)
+
+    def clean_phone_number(self) -> str:
+        phone = self.cleaned_data["phone_number"].strip()
+        # Strip non-digit characters for storage
+        digits_only = "".join(c for c in phone if c.isdigit())
+        if len(digits_only) < 7 or len(digits_only) > 15:
+            msg = _("Enter a valid phone number.")
+            raise forms.ValidationError(msg)
+        return digits_only
+
+
+class OTPVerifyForm(forms.Form):
+    """Verify Code — 6-digit OTP input."""
+
+    code = forms.CharField(min_length=6, max_length=6)
+
+    def clean_code(self) -> str:
+        code = self.cleaned_data["code"].strip()
+        if not code.isdigit():
+            msg = _("Code must be numeric.")
+            raise forms.ValidationError(msg)
+        return code
+
+
+class OTPResendForm(forms.Form):
+    """Resend OTP code."""
+
+    purpose = forms.ChoiceField(choices=[
+        ("phone_verify", "Phone Verification"),
+        ("email_verify", "Email Verification"),
+        ("password_reset", "Password Reset"),
+    ])
+
+
 class RefreshTokenForm(forms.Form):
     refresh_token = forms.CharField()
 
@@ -66,10 +117,28 @@ class PasswordChangeForm(forms.Form):
 
 
 class PasswordResetRequestForm(forms.Form):
+    """Forgot Password — request reset via email."""
+
     email = forms.EmailField()
+
+
+class PasswordResetOTPForm(forms.Form):
+    """Verify email — 4-digit code with 60s timer."""
+
+    email = forms.EmailField()
+    code = forms.CharField(min_length=6, max_length=6)
 
 
 class PasswordResetConfirmForm(forms.Form):
     uid = forms.CharField()
     token = forms.CharField()
     new_password = forms.CharField()
+
+
+class ProfileUpdateForm(forms.Form):
+    """Profile/settings — editable user fields."""
+
+    name = forms.CharField(max_length=255, required=False)
+    phone_country_code = forms.CharField(max_length=5, required=False)
+    phone_number = forms.CharField(max_length=20, required=False)
+    marketing_consent = forms.BooleanField(required=False)

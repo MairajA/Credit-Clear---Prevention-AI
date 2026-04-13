@@ -14,13 +14,13 @@ from credit_clear.users.api.tokens import create_token_pair
 User = get_user_model()
 
 
-def register_user(*, email: str, password: str, name: str, role: str, marketing_consent: bool) -> User:
+def register_user(*, email: str, password: str, name: str, marketing_consent: bool) -> User:
     now = timezone.now()
     user = User.objects.create_user(
         email=email,
         password=password,
         name=name,
-        role=role,
+        role=User.Role.CONSUMER,
         terms_accepted_at=now,
         privacy_accepted_at=now,
         marketing_consent=marketing_consent,
