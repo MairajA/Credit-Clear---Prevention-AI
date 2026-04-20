@@ -1,6 +1,6 @@
-# Credit Prevention AI Frontend
+﻿# Credit Clear - Frontend and Backend
 
-React Native + Expo mobile app for credit management and fraud prevention workflows.
+This repository contains both the React Native Expo frontend and the Django backend.
 
 ## Tech Stack
 
@@ -29,8 +29,8 @@ npm -v
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/ItsNabeelHussain/credit_clear_frontend.git
-cd credit_clear_frontend
+git clone https://github.com/MairajA/Credit-Clear---Prevention-AI.git
+cd Credit-Clear---Prevention-AI
 ```
 
 2. Install dependencies:
